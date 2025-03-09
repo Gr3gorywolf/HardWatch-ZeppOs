@@ -25,7 +25,9 @@
       "module": {
         "page": {
           "pages": [
-            "pages/index"
+            "pages/index",
+            "pages/device-data",
+            "pages/usage-history"
           ]
         },
         "app-side": {

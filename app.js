@@ -3,7 +3,8 @@ import { Application } from "@zapp-framework/core";
 import "./shared/device-polyfill"; 
 import { setTheme } from "@zapp-framework/ui";
 import { COLORS } from "./utils/config/colors";
-import { MessageSingleton } from "./shared/message-initializer";
+import { MessageInitializer, MessageSingleton } from "./shared/message-initializer";
+import { getGlobal } from "./shared/global";
 Application({
   onInit(){
     setTheme({
@@ -28,6 +29,7 @@ Application({
       textLink: COLORS.blue.base,
     })
     console.log("app on create invoke"); 
+    getGlobal().messageBuilder = MessageInitializer.init();
    
   //   console.log("all set");
   },

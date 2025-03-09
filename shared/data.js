@@ -61,3 +61,8 @@ export function allocOfBin(size = 0) {
 export function allocOfBuf(size = 0) {
   return Buffer.alloc(size)
 }
+
+
+export function percentToDegrees(percent) {
+  return (percent / 100) * 360;
+}
