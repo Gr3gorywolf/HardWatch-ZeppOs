@@ -1,28 +1,27 @@
 import { MessageBuilder } from "../shared/message";
 
 const messageBuilder = new MessageBuilder();
-const getRandomUsage = () => {
-  return Math.floor(Math.random() * 101);
+function getMonitorSettings() {
+  return settings.settingsStorage.getItem('monitor-settings')
+    ? JSON.parse(settings.settingsStorage.getItem('monitor-settings'))
+    : { serverUrl: '', appKey: '' }
 }
-const getRandomOS = () => {
-  return Math.random() > 0.5 ? "Windows" : "Linux";
-}
+
 async function fetchAllDevices(ctx) {
+  const settings = getMonitorSettings();
   try {
-    
-    const generateUsageData = (count = 5) => {
-      return Array.from({ length: count }, (_, i) => ({
-        id: i + 1,
-        name: `Device-${i + 1} - Linux`,
-        cpuUsage: getRandomUsage(),
-        gpuUsage: getRandomUsage(),
-        ramUsage: getRandomUsage(),
-        diskTotal: getRandomUsage()
-      }));
-    }
-    const restBody = generateUsageData(12);
+
+    const res = await fetch({
+      url: `${settings.serverUrl}/get-devices-stats`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'appkey': settings.appKey
+      }
+    })
+    const resBody = typeof res.body === 'string' ? JSON.parse(res.body) : res.body
     ctx.response({
-      data: { result: restBody },
+      data: { result: resBody },
     })
 
   } catch (error) {
@@ -33,41 +32,46 @@ async function fetchAllDevices(ctx) {
 };
 
 async function fetchDeviceData(ctx, deviceId) {
+  const settings = getMonitorSettings();
   try {
-    const restBody = {
-      name: `Device-${deviceId} - Linux`,
-      cpuUsages: Array.from({ length: 10 }, (_, i) => getRandomUsage()),
-      gpuUsages: Array.from({ length: 10 }, (_, i) => getRandomUsage()),
-      ramUsages: Array.from({ length: 10 }, (_, i) => getRandomUsage()),
-      diskTotals: Array.from({ length: 10 }, (_, i) => getRandomUsage()),
-      os: "Windows 10 Pro",
-      cpu: "8c I7 10700k",
-      gpu: "RTX 3080",
-      ram: "16GB",
-      disk: "1TB SSD",
-      actionables: [
-        {
-          name: "Discord",
-          action: "RESTART"
-        },
-        {
-          name: "Browser",
-          action: "SHUTDOWN"
-        },
-        {
-          name: "Restart",
-          action: "RESTART"
-        },
-        {
-          name: "Shutdown",
-          action: "SHUTDOWN"
-        }
-      ]
-    }
-    ctx.response({
-      data: { result: restBody },
+    const res = await fetch({
+      url: `${settings.serverUrl}/get-device-stats/${deviceId}`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'appkey': settings.appKey
+      }
     })
+    const resBody = typeof res.body === 'string' ? JSON.parse(res.body) : res.body
 
+    ctx.response({
+      data: { result: resBody },
+    })
+  } catch (error) {
+    console.error(error);
+    ctx.response({
+      data: { result: JSON.stringify(error) },
+    });
+  }
+};
+
+async function sendDeviceAction(ctx, deviceId,action) {
+  const settings = getMonitorSettings();
+  try {
+    const res = await fetch({
+      url: `${settings.serverUrl}/send-action/${deviceId}`,
+      body: JSON.stringify({name:deviceId,action}),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'appkey': settings.appKey
+      }
+    })
+    const resBody = typeof res.body === 'string' ? JSON.parse(res.body) : res.body
+
+    ctx.response({
+      data: { result: resBody },
+    })
   } catch (error) {
     console.error(error);
     ctx.response({
@@ -80,10 +84,8 @@ AppSideService({
   onInit() {
     console.log("Init");
     messageBuilder.listen(() => {
-
       console.log("Listening");
-    });
-
+    }); 
     messageBuilder.on("request", (ctx) => {
       const jsonRpc = messageBuilder.buf2Json(ctx.request.payload);
       console.log("DATAAA");
@@ -91,7 +93,10 @@ AppSideService({
         return fetchAllDevices(ctx);
       }
       if (jsonRpc.method === "DEVICE") {
-        return fetchDeviceData(ctx,jsonRpc.id);
+        return fetchDeviceData(ctx, jsonRpc.id);
+      }
+      if (jsonRpc.method === "DEVICE_ACTION") {
+        return sendDeviceAction(ctx, jsonRpc.id,jsonRpc.action);
       }
     });
   },

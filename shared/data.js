@@ -66,3 +66,7 @@ export function allocOfBuf(size = 0) {
 export function percentToDegrees(percent) {
   return (percent / 100) * 360;
 }
+
+export function removeDecimal(num) {
+  return Math.floor(num);
+}

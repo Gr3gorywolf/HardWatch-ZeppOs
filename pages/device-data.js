@@ -20,7 +20,7 @@ import {
 import { ActivityIndicator, ActivityIndicatorConfig, Button, ButtonConfig, ButtonStyle, Divider, DividerConfig, Text } from "@zapp-framework/ui";
 import { COLORS } from "../utils/config/colors";
 import { ScrollableScreen } from "@zapp-framework/watch";
-import { percentToDegrees } from "../shared/data";
+import { percentToDegrees, removeDecimal } from "../shared/data";
 import { getGlobal } from "../shared/global";
 const logger = DeviceRuntimeCore.HmLogger.getLogger("fetch_api");
 const messageBuilder = getGlobal().messageBuilder;
@@ -42,19 +42,38 @@ function fetchData(id) {
       });
   });
 }
+
+const handleSendAction = (deviceName,action) =>{
+  return new Promise((resolve, reject) => {
+  messageBuilder
+      .request({
+        method: "DEVICE_ACTION",
+        id:deviceName,
+        action
+      })
+      .then((data) => {
+        logger.log("Action sent", data);
+        resolve(data);
+      }).catch((error) => {
+        logger.error("Error sending action", error);
+        reject(error);
+      });
+    });
+}
 let fetcherEnabled = false;
+let isSendingAction = false;
 // finally render the GUI
 ScrollableScreen(Config("device-data"), (params) => {
-  logger.log(params);
+  logger.log(params.name);
   const isLoading = remember(true);
   const hasError = remember(false);
   const device = remember(null);
   const handleFetchData = () => {
-    fetchData(params).then((data) => {
+    fetchData(params.name).then((data) => {
       logger.log("Data fetched", data);
       device.value = data.result;
       hmUI.setStatusBarVisible(true)
-      hmUI.updateStatusBarTitle(device.value.name)
+      hmUI.updateStatusBarTitle(`${device.value.name} - ${device.value.platform}`)
     }).catch((error) => {
       logger.error(error);
       hasError.value = true;
@@ -77,7 +96,7 @@ ScrollableScreen(Config("device-data"), (params) => {
 
   const renderMetricTile = (name, value) => {
     return Stack(StackConfig(name)
-    .background(COLORS.grey.darken4)
+    .background(COLORS.grey.darken5)
     .width(160)
     .height(160)
     .cornerRadius(10)
@@ -94,8 +113,18 @@ ScrollableScreen(Config("device-data"), (params) => {
 
   const renderActionable = (actionable) =>{ 
     Button(ButtonConfig("actionable"+actionable.name)
-    .background(COLORS.grey.darken4)
-    .onPress(()=>{}),()=>{
+    .background(COLORS.grey.darken5)
+    .onPress(()=>{
+      if(isSendingAction){
+        return;
+      }
+      isSendingAction = true;
+      handleSendAction(device.value.name,actionable.name).then(()=>{
+
+      }).finally(()=>{
+        isSendingAction = false;
+      });
+    }),()=>{
         Column(ColumnConfig("actionable-content"+actionable.name)
         .width(90)
         .height(45)
@@ -153,16 +182,16 @@ ScrollableScreen(Config("device-data"), (params) => {
       }
       Column(ColumnConfig("indicators-container").width(340).alignment(Alignment.Center),()=>{
         Row(RowConfig("upper-indicators"),()=>{
-            renderMetricTile("cpu", device.value.cpuUsages[device.value.cpuUsages.length-1]);
+            renderMetricTile("cpu", removeDecimal(device.value.cpuUsage));
             Column(ColumnConfig("spacer").width(20));
-            renderMetricTile("gpu", device.value.gpuUsages[device.value.gpuUsages.length-1]);
+            renderMetricTile("gpu", removeDecimal(device.value.gpuUsage));
           
           })
           Column(ColumnConfig("spacer").height(20));
           Row(RowConfig("lower-indicators"),()=>{
-            renderMetricTile("ram", device.value.ramUsages[device.value.ramUsages.length-1]);
+            renderMetricTile("ram", removeDecimal(device.value.ramUsage));
             Column(ColumnConfig("spacer").width(20));
-            renderMetricTile("disk", device.value.diskTotals[device.value.diskTotals.length-1]);
+            renderMetricTile("disk", removeDecimal(device.value.diskTotal));
           })
       })
       Column(ColumnConfig("spacer").height(20));
@@ -170,7 +199,7 @@ ScrollableScreen(Config("device-data"), (params) => {
       Column(ColumnConfig("spacer").height(20));
       Column(ColumnConfig("info-container")
       .cornerRadius(10)
-      .background(COLORS.grey.darken4)
+      .background(COLORS.grey.darken5)
       .width(340)
       .offset(10,0)
       .padding(15)

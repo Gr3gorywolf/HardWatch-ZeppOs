@@ -20,6 +20,7 @@ import { COLORS } from "../utils/config/colors";
 import { rememberScrollPosition, ScrollableScreen } from "@zapp-framework/watch";
 import { MessageInitializer } from "../shared/message-initializer";
 import { getGlobal } from "../shared/global";
+import { removeDecimal } from "../shared/data";
 const logger = DeviceRuntimeCore.HmLogger.getLogger("fetch_api");
 hmUI.updateStatusBarTitle("My Devices")
 const messageBuilder = getGlobal().messageBuilder;
@@ -31,6 +32,11 @@ function fetchData() {
       })
       .then((data) => {
         logger.log("Data fetched", data);
+        if(data.result === "ERROR"){
+          logger.error("Http error",data);
+          reject("Error fetching data");
+          return;
+        }
         resolve(data);
       }).catch((error) => {
         logger.error("Error fetching data", error);
@@ -68,26 +74,27 @@ ScrollableScreen(Config("screen"), () => {
     } 
   }, [])
   const renderDevice = (device) => {
-    Column(ColumnConfig(device.name + "spacer").height(5));
+    const handleNavigate = ()=>{
+      hmApp.gotoPage({ url: 'pages/device-data', param: JSON.stringify({name:device.name}) })
+    }
+    Column(ColumnConfig(device.name + "spacer").height(20));
     Column(ColumnConfig(device.name + "container")
       .padding(15)
       .fillWidth()
       .height(100)
       .cornerRadius(5)
-      .onPointerUp(()=>{
-        hmApp.gotoPage({ url: 'pages/device-data', param: device.id })
-      })
-      .background(COLORS.grey.darken4), () => {
-        Text(TextConfig("device-name-text").textColor(COLORS.grey.lighten5).fillWidth().textSize(20), `${device.name}`)
-        Divider(DividerConfig("divider").fillWidth().offset(0, 8).color(COLORS.grey.darken3))
-        Text(TextConfig("cpu-usage").textColor(COLORS.grey.lighten5).offset(0, 15).textSize(16), `CPU: ${device.cpuUsage}%  |  GPU: ${device.gpuUsage}%  |  RAM: ${device.ramUsage}%  |  HDD: ${device.diskTotal}%`)
+      .onPointerUp(handleNavigate)
+      .background(COLORS.grey.darken5), () => {
+        Text(TextConfig(device.name +"device-name-text").textColor(COLORS.grey.lighten5).fillWidth().textSize(20), `${device.name} - ${device.platform}`)
+        Divider(DividerConfig("divider").fillWidth().offset(0, 8).color(COLORS.grey.darken4))
+        Text(TextConfig(device.name+"usage").textColor(COLORS.grey.lighten5).offset(0, 15).textSize(16), `CPU: ${removeDecimal(device.cpuUsage)}%  |  GPU: ${removeDecimal(device.gpuUsage)}%  |  RAM: ${removeDecimal(device.ramUsage)}%  |  HDD: ${removeDecimal(device.diskTotal)}%`)
 
       });
   }
   Column(
     ColumnConfig("col")
       .fillSize()
-      .padding(0, 65, 0, 40)
+      .padding(10, 65, 10, 40)
       // this forces OS to flush the screen so there aren't any artifacts left
       .alignment(devices.value.length > 0 ? Alignment.Start : Alignment.Center)
       .arrangement(devices.value.length > 0 ? Arrangement.Start : Arrangement.Center),

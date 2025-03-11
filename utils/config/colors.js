@@ -277,7 +277,8 @@ export const COLORS = {
         darken1: 0x757575,
         darken2: 0x616161,
         darken3: 0x424242,
-        darken4: 0x212121
+        darken4: 0x212121,
+        darken5: 0x141414
     },
     blueGrey: {
         lighten5: 0xeceff1,
@@ -289,7 +290,7 @@ export const COLORS = {
         darken1: 0x546e7a,
         darken2: 0x455a64,
         darken3: 0x37474f,
-        darken4: 0x263238
+        darken4: 0x263238, 
     },
     black: 0x000000,
     white: 0xffffff
