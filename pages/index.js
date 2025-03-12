@@ -65,6 +65,7 @@ ScrollableScreen(Config("screen"), () => {
   sideEffect(() => {
     let intervalKey = null
     if (isLoading.value && !fetcherEnabled) {
+        handleFetchData()
         intervalKey=  setInterval(() => {
         if(!hasError.value){
           handleFetchData()
@@ -86,7 +87,7 @@ ScrollableScreen(Config("screen"), () => {
       .onPointerUp(handleNavigate)
       .background(COLORS.grey.darken5), () => {
         Text(TextConfig(device.name +"device-name-text").textColor(COLORS.grey.lighten5).fillWidth().textSize(20), `${device.name} - ${device.platform}`)
-        Divider(DividerConfig("divider").fillWidth().offset(0, 8).color(COLORS.grey.darken4))
+        Divider(DividerConfig("divider").fillWidth().offset(0, 8).color(COLORS.grey.darken3))
         Text(TextConfig(device.name+"usage").textColor(COLORS.grey.lighten5).offset(0, 15).textSize(16), `CPU: ${removeDecimal(device.cpuUsage)}%  |  GPU: ${removeDecimal(device.gpuUsage)}%  |  RAM: ${removeDecimal(device.ramUsage)}%  |  HDD: ${removeDecimal(device.diskTotal)}%`)
 
       });

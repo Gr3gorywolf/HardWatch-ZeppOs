@@ -85,6 +85,7 @@ ScrollableScreen(Config("device-data"), (params) => {
   sideEffect(() => {
     let intervalKey = null
     if (isLoading.value && !fetcherEnabled) {
+        handleFetchData()
         intervalKey=  setInterval(() => {
         if(!hasError.value){
           handleFetchData()
