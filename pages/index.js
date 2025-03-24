@@ -1,24 +1,17 @@
 import "@zapp-framework/watch";
 import {
   Alignment,
-  Arc,
   Arrangement,
   Column,
   ColumnConfig,
   Config,
-  Custom,
   remember,
-  Row,
-  RowConfig,
   sideEffect,
-  SimpleScreen,
   TextConfig,
 } from "@zapp-framework/core";
-import { MessageBuilder } from "../shared/message";
 import { ActivityIndicator, ActivityIndicatorConfig, Button, ButtonConfig, ButtonStyle, Divider, DividerConfig, Text } from "@zapp-framework/ui";
 import { COLORS } from "../utils/config/colors";
 import { rememberScrollPosition, ScrollableScreen } from "@zapp-framework/watch";
-import { MessageInitializer } from "../shared/message-initializer";
 import { getGlobal } from "../shared/global";
 import { removeDecimal } from "../shared/data";
 const logger = DeviceRuntimeCore.HmLogger.getLogger("fetch_api");
@@ -76,7 +69,7 @@ ScrollableScreen(Config("screen"), () => {
   }, [])
   const renderDevice = (device) => {
     const handleNavigate = ()=>{
-      hmApp.gotoPage({ url: 'pages/device-data', param: JSON.stringify({name:device.name}) })
+      hmApp.gotoPage({ url: 'pages/device-data', param: JSON.stringify({id:device.id}) })
     }
     Column(ColumnConfig(device.name + "spacer").height(20));
     Column(ColumnConfig(device.name + "container")
@@ -88,7 +81,7 @@ ScrollableScreen(Config("screen"), () => {
       .background(COLORS.grey.darken5), () => {
         Text(TextConfig(device.name +"device-name-text").textColor(COLORS.grey.lighten5).fillWidth().textSize(20), `${device.name} - ${device.platform}`)
         Divider(DividerConfig("divider").fillWidth().offset(0, 8).color(COLORS.grey.darken3))
-        Text(TextConfig(device.name+"usage").textColor(COLORS.grey.lighten5).offset(0, 15).textSize(16), `CPU: ${removeDecimal(device.cpuUsage)}%  |  GPU: ${removeDecimal(device.gpuUsage)}%  |  RAM: ${removeDecimal(device.ramUsage)}%  |  HDD: ${removeDecimal(device.diskTotal)}%`)
+        Text(TextConfig(device.name+"usage").textColor(COLORS.grey.lighten5).offset(0, 15).textSize(16), `CPU: ${removeDecimal(device.cpuUsage)}%  |  GPU: ${removeDecimal(device.gpuUsage)}%  |  RAM: ${removeDecimal(device.ramUsage)}%  |  HDD: ${removeDecimal(device.diskUsage)}%`)
 
       });
   }

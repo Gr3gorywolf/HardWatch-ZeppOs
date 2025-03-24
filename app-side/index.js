@@ -12,7 +12,7 @@ async function fetchAllDevices(ctx) {
   try {
 
     const res = await fetch({
-      url: `${settings.serverUrl}/get-devices-stats`,
+      url: `${settings.serverUrl}/api/devices/get-devices-stats`,
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -35,7 +35,7 @@ async function fetchDeviceData(ctx, deviceId) {
   const settings = getMonitorSettings();
   try {
     const res = await fetch({
-      url: `${settings.serverUrl}/get-device-stats/${deviceId}`,
+      url: `${settings.serverUrl}/api/devices/get-device-stats/${deviceId}`,
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ async function sendDeviceAction(ctx, deviceId,action) {
   const settings = getMonitorSettings();
   try {
     const res = await fetch({
-      url: `${settings.serverUrl}/send-action/${deviceId}`,
+      url: `${settings.serverUrl}/api/devices/send-action/${deviceId}`,
       body: JSON.stringify({name:deviceId,action}),
       method: 'POST',
       headers: {

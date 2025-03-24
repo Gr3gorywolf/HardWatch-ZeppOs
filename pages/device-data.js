@@ -7,12 +7,10 @@ import {
   Column,
   ColumnConfig,
   Config,
-  Custom,
   remember,
   Row,
   RowConfig,
   sideEffect,
-  SimpleScreen,
   Stack,
   StackConfig,
   TextConfig,
@@ -43,12 +41,12 @@ function fetchData(id) {
   });
 }
 
-const handleSendAction = (deviceName,action) =>{
+const handleSendAction = (deviceId,action) =>{
   return new Promise((resolve, reject) => {
   messageBuilder
       .request({
         method: "DEVICE_ACTION",
-        id:deviceName,
+        id:deviceId,
         action
       })
       .then((data) => {
@@ -69,7 +67,7 @@ ScrollableScreen(Config("device-data"), (params) => {
   const hasError = remember(false);
   const device = remember(null);
   const handleFetchData = () => {
-    fetchData(params.name).then((data) => {
+    fetchData(params.id).then((data) => {
       logger.log("Data fetched", data);
       device.value = data.result;
       hmUI.setStatusBarVisible(true)
@@ -120,7 +118,7 @@ ScrollableScreen(Config("device-data"), (params) => {
         return;
       }
       isSendingAction = true;
-      handleSendAction(device.value.name,actionable.name).then(()=>{
+      handleSendAction(device.value.id,actionable.name).then(()=>{
 
       }).finally(()=>{
         isSendingAction = false;
@@ -192,7 +190,7 @@ ScrollableScreen(Config("device-data"), (params) => {
           Row(RowConfig("lower-indicators"),()=>{
             renderMetricTile("ram", removeDecimal(device.value.ramUsage));
             Column(ColumnConfig("spacer").width(20));
-            renderMetricTile("disk", removeDecimal(device.value.diskTotal));
+            renderMetricTile("disk", removeDecimal(device.value.diskUsage));
           })
       })
       Column(ColumnConfig("spacer").height(20));
@@ -205,6 +203,9 @@ ScrollableScreen(Config("device-data"), (params) => {
       .offset(10,0)
       .padding(15)
       .alignment(Alignment.Start),()=>{
+            if(device.value.battery){
+              Text(TextConfig("battery").textColor(COLORS.grey.lighten5).textSize(18).offset(0,10),`Battery: ${removeDecimal(device.value.battery)}% ${device.value.isCharging ? "- Charging":""}`);
+            }
             Text(TextConfig("os").textColor(COLORS.grey.lighten5).textSize(18).offset(0,10),`OS: ${device.value.os}`);
             Text(TextConfig("cpu").textColor(COLORS.grey.lighten5).textSize(18).offset(0,10),`CPU: ${device.value.cpu}`);
             Text(TextConfig("gpu").textColor(COLORS.grey.lighten5).textSize(18).offset(0,10),`GPU: ${device.value.gpu}`);        

@@ -2,7 +2,7 @@
   "configVersion": "v2",
   "app": {
     "appId": 26454,
-    "appName": "Devices Monitor",
+    "appName": "HardWatch",
     "appType": "app",
     "version": {
       "code": 1,
